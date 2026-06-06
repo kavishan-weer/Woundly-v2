@@ -1,0 +1,11 @@
+{
+  "classes": [
+    "Invalid",
+    "SDTI",
+    "Stage_I",
+    "Stage_II",
+    "Stage_III",
+    "Stage_IV",
+    "Unstageable"
+  ]
+}

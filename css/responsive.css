@@ -1,0 +1,37 @@
+@media (max-width: 1000px) {
+  .app-shell { grid-template-columns: 1fr; }
+  .sidebar { position: fixed; z-index: 10; width: 248px; transform: translateX(-100%); transition: .25s ease; }
+  .sidebar.open { transform: translateX(0); box-shadow: 15px 0 30px rgba(20,55,60,.16); }
+  .menu-toggle { display: grid; margin-right: 13px; }
+  .hero-card { grid-template-columns: 1fr .66fr; }
+  .hero-copy { padding: 36px; }
+  .checkin-grid, .result-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 720px) {
+  .topbar { min-height: 78px; padding: 15px 18px; }
+  .page { padding: 25px 18px 38px; }
+  .topbar-actions .icon-button { display: none; }
+  .primary-button.compact { padding: 10px; font-size: 0; }
+  .primary-button.compact svg { width: 19px; height: 19px; }
+  .hero-card { display: block; min-height: auto; }
+  .hero-copy { padding: 28px 24px; }
+  .hero-visual { display: none; }
+  .metric-grid, .guidance-grid { grid-template-columns: 1fr; }
+  .provider-metrics { grid-template-columns: 1fr; }
+  .content-grid { grid-template-columns: 1fr; }
+  .safety-strip { align-items: flex-start; flex-wrap: wrap; }
+  .safety-strip .text-button { margin-left: 52px; }
+  .upload-zone, #upload-preview { min-height: 300px; height: 300px; }
+  .timeline-intro { display: block; }
+  .timeline-intro .primary-button { margin-top: 15px; }
+  .timeline-layout { grid-template-columns: 1fr; }
+  .timeline-summary { position: static; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .summary-stat { padding: 0 8px 0 0; border-right: 1px solid var(--line); border-bottom: 0; }
+  .summary-stat:last-child { border-right: 0; }
+  .summary-stat strong { font-size: 14px; }
+  .timeline-card { grid-template-columns: 105px minmax(0, 1fr); gap: 11px; }
+  .timeline-thumb { width: 105px; height: 105px; }
+  .analysis-metrics { grid-template-columns: repeat(2, 1fr); }
+  .tissue-panel { grid-template-columns: 1fr; }
+}

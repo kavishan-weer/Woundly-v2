@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Woundly is a wound progress tracking prototype for photo-based check-ins and care insights."
+    />
+    <title>Woundly | Wound Progress Companion</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" id="sidebar">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 40 40" role="img">
+              <path d="M20 6v28M6 20h28" />
+              <circle cx="20" cy="20" r="17" />
+            </svg>
+          </div>
+          <span>Woundly</span>
+        </div>
+
+        <nav class="main-nav" aria-label="Main navigation">
+          <button class="nav-item active" data-view="dashboard">
+            <svg viewBox="0 0 24 24"><path d="M4 13h6V4H4v9Zm0 7h6v-4H4v4Zm10 0h6v-9h-6v9Zm0-16v4h6V4h-6Z" /></svg>
+            <span>Overview</span>
+          </button>
+          <button class="nav-item" data-view="check-in">
+            <svg viewBox="0 0 24 24"><path d="M12 5v14m-7-7h14" /></svg>
+            <span>New check-in</span>
+          </button>
+          <button class="nav-item" data-view="timeline">
+            <svg viewBox="0 0 24 24"><path d="M5 5v14h14M8 15l3-4 3 2 4-6" /></svg>
+            <span>Progress</span>
+          </button>
+          <button class="nav-item" data-view="provider">
+            <svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2m7-10a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm10-3v6m-3-3h6" /></svg>
+            <span>Provider view</span>
+          </button>
+          <button class="nav-item" data-view="guidance">
+            <svg viewBox="0 0 24 24"><path d="M12 18h.01M9.6 9a2.5 2.5 0 1 1 4.7 1.2c-.8 1.4-2.3 1.6-2.3 3.3M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Z" /></svg>
+            <span>Care guide</span>
+          </button>
+        </nav>
+
+        <div class="sidebar-foot">
+          <div class="privacy-chip">
+            <svg viewBox="0 0 24 24"><path d="M12 21s7-3.4 7-9V5l-7-2-7 2v7c0 5.6 7 9 7 9Zm0-12v6m-3-3h6" /></svg>
+            <div>
+              <strong>Private by design</strong>
+              <span>Photos stay on this device</span>
+            </div>
+          </div>
+          <button class="profile">
+            <span class="avatar">KW</span>
+            <span class="profile-copy">
+              <strong>My care journal</strong>
+              <small>Personal workspace</small>
+            </span>
+            <span class="profile-more">···</span>
+          </button>
+        </div>
+      </aside>
+
+      <main>
+        <header class="topbar">
+          <button class="menu-toggle" id="menu-toggle" aria-label="Open navigation">
+            <svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
+          </button>
+          <div class="topbar-copy">
+            <p id="today-label"></p>
+            <h1 id="page-title">Wound overview</h1>
+          </div>
+          <div class="topbar-actions">
+            <button class="icon-button" aria-label="Notifications">
+              <svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9m-8 12h4" /></svg>
+              <span class="notification-dot"></span>
+            </button>
+            <button class="primary-button compact" data-go="check-in">
+              <svg viewBox="0 0 24 24"><path d="M12 5v14m-7-7h14" /></svg>
+              Add check-in
+            </button>
+          </div>
+        </header>
+
+        <section class="page active" id="dashboard-view">
+          <div class="hero-card">
+            <div class="hero-copy">
+              <span class="eyebrow"><span class="pulse"></span> Your healing companion</span>
+              <h2>Keep a closer eye on your recovery.</h2>
+              <p>Upload regular wound photos to visualize boundaries, measurements, and changes over time.</p>
+              <button class="primary-button" data-go="check-in">
+                Start today’s check-in
+                <svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6" /></svg>
+              </button>
+            </div>
+            <div class="hero-visual" aria-hidden="true">
+              <div class="visual-orbit orbit-one"></div>
+              <div class="visual-orbit orbit-two"></div>
+              <div class="medical-cross">
+                <span></span>
+                <span></span>
+              </div>
+              <div class="floating-card fc-one">
+                <svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6" /></svg>
+                <div><strong>On track</strong><small>Regular check-ins help</small></div>
+              </div>
+              <div class="floating-card fc-two">
+                <svg viewBox="0 0 24 24"><path d="M4 17h16M6 14l4-4 3 2 5-6" /></svg>
+                <div><strong>Track changes</strong><small>Compare over time</small></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="section-heading">
+            <div>
+              <span class="eyebrow muted">Today at a glance</span>
+              <h2>Your care overview</h2>
+            </div>
+            <button class="text-button" data-go="timeline">View full progress <span>→</span></button>
+          </div>
+
+          <div class="metric-grid">
+            <article class="metric-card">
+              <div class="metric-icon sea"><svg viewBox="0 0 24 24"><path d="M12 21a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm0-12v4l3 2" /></svg></div>
+              <div><span>Last check-in</span><strong id="last-checkin">No entries yet</strong><small id="last-checkin-note">Start with a baseline photo</small></div>
+            </article>
+            <article class="metric-card">
+              <div class="metric-icon coral"><svg viewBox="0 0 24 24"><path d="M12 20s7-4.3 7-10A4 4 0 0 0 12 7a4 4 0 0 0-7 3c0 5.7 7 10 7 10Z" /></svg></div>
+              <div><span>Current trend</span><strong id="trend-status">Waiting for data</strong><small id="trend-note">Two check-ins unlock trends</small></div>
+            </article>
+            <article class="metric-card">
+              <div class="metric-icon lavender"><svg viewBox="0 0 24 24"><path d="M6 3v3m12-3v3M4 9h16M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z" /></svg></div>
+              <div><span>Tracking streak</span><strong id="streak-count">0 check-ins</strong><small>Consistency improves comparisons</small></div>
+            </article>
+          </div>
+
+          <div class="content-grid">
+            <article class="panel progress-panel">
+              <div class="panel-header">
+                <div>
+                  <span class="eyebrow muted">Progress snapshot</span>
+                  <h3>Healing timeline</h3>
+                </div>
+                <span class="soft-badge" id="timeline-badge">New journal</span>
+              </div>
+              <div id="dashboard-empty" class="empty-state compact-empty">
+                <div class="empty-icon">
+                  <svg viewBox="0 0 24 24"><path d="M4 19V5m0 14h16M8 15l3-4 3 2 4-6" /></svg>
+                </div>
+                <div>
+                  <strong>Your timeline starts with one photo</strong>
+                  <p>Log a check-in now, then return with another photo to compare how things are changing.</p>
+                </div>
+              </div>
+              <div id="dashboard-progress" class="dashboard-progress hidden">
+                <div class="progress-chart" id="progress-chart"></div>
+                <div class="chart-footer"><span>Earlier</span><span>Latest check-in</span></div>
+              </div>
+            </article>
+
+            <article class="panel next-step-panel">
+              <div class="panel-header">
+                <div>
+                  <span class="eyebrow muted">A gentle reminder</span>
+                  <h3>Your next step</h3>
+                </div>
+                <div class="calendar-icon"><span id="next-day">03</span><small id="next-month">JUN</small></div>
+              </div>
+              <p id="next-step-copy">Add a baseline image today. Try to use the same lighting, distance, and angle each time.</p>
+              <button class="secondary-button" data-go="check-in">Create check-in</button>
+            </article>
+          </div>
+
+          <article class="safety-strip">
+            <div class="safety-icon">
+              <svg viewBox="0 0 24 24"><path d="M12 9v4m0 4h.01M10.3 4.3 2.9 17a2 2 0 0 0 1.7 3h14.8a2 2 0 0 0 1.7-3L13.7 4.3a2 2 0 0 0-3.4 0Z" /></svg>
+            </div>
+            <div>
+              <strong>Decision support only</strong>
+              <p>This academic prototype visualizes image-based changes. It cannot diagnose complications or replace a healthcare professional.</p>
+            </div>
+            <button class="text-button" data-go="guidance">Read photo guide <span>→</span></button>
+          </article>
+        </section>
+
+        <section class="page" id="check-in-view">
+          <div class="page-intro">
+            <span class="eyebrow muted">New progress entry</span>
+            <h2>How is the wound looking today?</h2>
+            <p>Add one clear photo. The AI will segment the wound, extract visual features, estimate a category, and compare it with prior uploads.</p>
+          </div>
+
+          <div class="checkin-grid photo-only-grid">
+            <section class="panel upload-panel">
+              <div class="step-heading"><span>1</span><div><h3>Add a wound photo</h3><p>Good lighting and a consistent angle make comparisons more meaningful.</p></div></div>
+              <label class="upload-zone" id="upload-zone" for="wound-photo">
+                <input id="wound-photo" type="file" accept="image/*" />
+                <img id="upload-preview" alt="Uploaded wound preview" />
+                <div class="upload-placeholder" id="upload-placeholder">
+                  <div class="upload-icon">
+                    <svg viewBox="0 0 24 24"><path d="M12 16V4m0 0L8 8m4-4 4 4M5 13v6a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-6" /></svg>
+                  </div>
+                  <strong>Drop a photo here or click to browse</strong>
+                  <small>JPG, PNG, or HEIC · use a clear close-up</small>
+                </div>
+                <button class="change-photo hidden" id="change-photo" type="button">Change photo</button>
+              </label>
+              <div class="photo-tips">
+                <span><svg viewBox="0 0 24 24"><path d="M12 3v2m0 14v2m9-9h-2M5 12H3m15.4-6.4L17 7m-10 10-1.4 1.4M18.4 18.4 17 17M7 7 5.6 5.6M16 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z" /></svg>Even lighting</span>
+                <span><svg viewBox="0 0 24 24"><path d="M12 8v8m-4-4h8M5 5h14v14H5z" /></svg>Same distance</span>
+                <span><svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6" /></svg>In focus</span>
+              </div>
+            </section>
+
+            <section class="panel details-panel">
+              <div class="step-heading"><span>2</span><div><h3>Run image analysis</h3><p>No questionnaire is required. Analysis is based on the uploaded wound photo.</p></div></div>
+              <form id="checkin-form">
+                <div class="analysis-preview">
+                  <span class="model-chip">Photo-only workflow</span>
+                  <h3>What the prototype measures</h3>
+                  <ul>
+                    <li>U-Net wound-boundary segmentation</li>
+                    <li>Frame coverage, perimeter, shape, and segmented color composition</li>
+                    <li>Pressure-injury category estimate</li>
+                    <li>Progress comparison after a second photo</li>
+                  </ul>
+                </div>
+                <label class="consent-row">
+                  <input id="prototype-consent" type="checkbox" />
+                  <span>I understand this image-analysis prototype supports tracking only and cannot diagnose complications or replace a healthcare professional.</span>
+                </label>
+                <button class="primary-button full-width" type="submit">Analyze and save check-in <svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6" /></svg></button>
+              </form>
+            </section>
+          </div>
+        </section>
+
+        <section class="page" id="result-view">
+          <div class="result-topline">
+            <button class="back-button" data-go="dashboard"><span>←</span> Back to overview</button>
+            <span class="soft-badge">Saved to your journal</span>
+          </div>
+          <div id="result-content"></div>
+        </section>
+
+        <section class="page" id="timeline-view">
+          <div class="page-intro timeline-intro">
+            <div>
+              <span class="eyebrow muted">Your journal</span>
+              <h2>Progress over time</h2>
+              <p>Review each check-in and look for meaningful changes between entries.</p>
+            </div>
+            <button class="primary-button" data-go="check-in"><svg viewBox="0 0 24 24"><path d="M12 5v14m-7-7h14" /></svg>Add check-in</button>
+          </div>
+          <div id="timeline-empty" class="panel empty-state large-empty">
+            <div class="empty-icon"><svg viewBox="0 0 24 24"><path d="M6 3v3m12-3v3M4 9h16M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z" /></svg></div>
+            <h3>No check-ins yet</h3>
+            <p>Your photo journal will appear here once you add your first entry.</p>
+            <button class="secondary-button" data-go="check-in">Create your first entry</button>
+          </div>
+          <div id="timeline-content" class="timeline-layout hidden">
+            <section class="panel timeline-summary" id="timeline-summary"></section>
+            <section class="timeline-list" id="timeline-list"></section>
+          </div>
+        </section>
+
+        <section class="page" id="guidance-view">
+          <div class="page-intro">
+            <span class="eyebrow muted">Care guidance</span>
+            <h2>Simple habits. Safer decisions.</h2>
+            <p>Use a consistent photography routine so visual comparisons are more meaningful.</p>
+          </div>
+          <div class="guidance-grid">
+            <article class="panel guidance-card">
+              <div class="guidance-number">01</div>
+              <h3>Take consistent photos</h3>
+              <p>Use similar lighting, distance, and angle each time. Avoid filters and keep the area in focus.</p>
+            </article>
+            <article class="panel guidance-card">
+              <div class="guidance-number">02</div>
+              <h3>Keep the scale consistent</h3>
+              <p>Use the same distance and angle each time. A future version should include a reference marker for physical area measurements.</p>
+            </article>
+            <article class="panel guidance-card">
+              <div class="guidance-number">03</div>
+              <h3>Use professional judgment</h3>
+              <p>Share your timeline with a clinician. Do not delay care while waiting for an application result.</p>
+            </article>
+          </div>
+          <article class="urgent-panel">
+            <div>
+              <span class="eyebrow">Prototype limitation</span>
+              <h3>Image analysis is not a diagnosis</h3>
+              <p>This system supports visual progress tracking only. It cannot rule out complications, provide treatment recommendations, or replace professional assessment.</p>
+            </div>
+            <p class="urgent-note">Consult a qualified healthcare professional for medical advice or when concerned about a wound.</p>
+          </article>
+        </section>
+
+        <section class="page" id="provider-view">
+          <div class="page-intro timeline-intro">
+            <div>
+              <span class="eyebrow muted">Clinical support prototype</span>
+              <h2>Patient review queue</h2>
+              <p>A simplified provider interface for reviewing progress, prioritizing concerning changes, and adding clinical oversight.</p>
+            </div>
+            <span class="soft-badge">Demo workspace</span>
+          </div>
+          <div class="provider-metrics">
+            <article class="metric-card">
+              <div class="metric-icon sea"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2m3-10a4 4 0 1 0 0-8 4 4 0 0 0 0 8" /></svg></div>
+              <div><span>Tracked patients</span><strong id="provider-patient-count">4 patients</strong><small>Including local journal</small></div>
+            </article>
+            <article class="metric-card">
+              <div class="metric-icon coral"><svg viewBox="0 0 24 24"><path d="M12 9v4m0 4h.01M10.3 4.3 2.9 17a2 2 0 0 0 1.7 3h14.8a2 2 0 0 0 1.7-3L13.7 4.3a2 2 0 0 0-3.4 0Z" /></svg></div>
+              <div><span>Needs review</span><strong id="provider-review-count">2 cases</strong><small>Prioritized by visual progress signals</small></div>
+            </article>
+            <article class="metric-card">
+              <div class="metric-icon lavender"><svg viewBox="0 0 24 24"><path d="M6 3v3m12-3v3M4 9h16M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z" /></svg></div>
+              <div><span>Recent uploads</span><strong id="provider-upload-count">3 today</strong><small>Awaiting clinical oversight</small></div>
+            </article>
+          </div>
+          <section class="panel provider-table-panel">
+            <div class="panel-header">
+              <div>
+                <span class="eyebrow muted">Priority list</span>
+                <h3>Remote monitoring overview</h3>
+              </div>
+              <span class="model-chip">Decision support only</span>
+            </div>
+            <div class="provider-table-wrap">
+              <table class="provider-table">
+                <thead><tr><th>Patient</th><th>Last check-in</th><th>Reported trend</th><th>Latest indicator</th><th>Review priority</th></tr></thead>
+                <tbody id="provider-table-body"></tbody>
+              </table>
+            </div>
+          </section>
+          <article class="provider-note">
+            <strong>Prototype boundary</strong>
+            <p>Sample patients are fictional. The local journal row uses photo-based measurements from the connected proof-of-concept models. Model outputs are not clinically validated.</p>
+          </article>
+        </section>
+      </main>
+    </div>
+    <div class="toast" id="toast" role="status"></div>
+    <script type="module" src="app.js"></script>
+  </body>
+</html>

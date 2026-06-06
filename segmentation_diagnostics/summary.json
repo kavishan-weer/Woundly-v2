@@ -1,0 +1,11 @@
+{
+  "threshold": 0.25,
+  "raw_macro_dice": 0.3849,
+  "clean_macro_dice": 0.3686,
+  "empty_ground_truth_count": 13,
+  "empty_clean_prediction_count": 33,
+  "mean_truth_coverage_percent": 1.3441,
+  "mean_raw_prediction_coverage_percent": 1.2363,
+  "mean_clean_prediction_coverage_percent": 0.8707,
+  "mean_probability": 0.0161
+}
