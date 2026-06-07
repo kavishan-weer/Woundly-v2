@@ -182,6 +182,8 @@ input[type="checkbox"] { accent-color: var(--teal); }
 .full-width { width: 100%; }
 
 .result-topline { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; }
+.result-back-buttons { display: flex; align-items: center; gap: 14px; }
+.result-back-buttons .back-button { font-size: 12px; }
 .result-grid { display: grid; grid-template-columns: .86fr 1.14fr; gap: 16px; }
 .result-image { width: 100%; max-height: 470px; border-radius: 13px; object-fit: cover; }
 .result-image-wrap { position: relative; }
@@ -251,6 +253,43 @@ input[type="checkbox"] { accent-color: var(--teal); }
 .tag-row { display: flex; flex-wrap: wrap; gap: 5px; }
 .mini-tag { padding: 4px 7px; border-radius: 20px; color: #668184; background: #f0f6f5; font-size: 9px; font-weight: 700; }
 .trend-badge { align-self: flex-start; padding: 5px 8px; border-radius: 20px; color: #387b75; background: #e5f5f2; font-size: 9px; font-weight: 800; text-transform: uppercase; }
+
+.timeline-card-actions { display: flex; align-items: center; gap: 7px; }
+.delete-entry-button {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--faint);
+  background: transparent;
+  transition: .2s ease;
+}
+.delete-entry-button:hover { color: var(--danger); border-color: #f0c5be; background: var(--danger-soft); }
+.delete-entry-button svg { width: 15px; height: 15px; }
+
+.clickable-thumb { cursor: pointer; transition: .2s ease; }
+.clickable-thumb:hover { transform: scale(1.03); box-shadow: 0 6px 16px rgba(39, 92, 91, .12); }
+
+.timeline-card-bottom { display: flex; align-items: end; justify-content: space-between; gap: 10px; }
+.view-detail-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex: 0 0 auto;
+  padding: 6px 11px;
+  border: 1px solid #bddbd7;
+  border-radius: 8px;
+  color: var(--teal);
+  background: #f7fffd;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+  transition: .2s ease;
+}
+.view-detail-button:hover { background: var(--teal-soft); transform: translateY(-1px); }
+.view-detail-button svg { width: 14px; height: 14px; }
 
 .progress-chart { display: flex; align-items: end; gap: 9px; height: 102px; padding-top: 14px; }
 .bar-wrap { display: flex; flex: 1; flex-direction: column; align-items: center; justify-content: end; height: 100%; gap: 5px; }

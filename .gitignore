@@ -8,3 +8,7 @@ __pycache__/
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# Large Model Weights and SQLite Database
+my model/unet_wound_segmentation_best.keras
+woundly.db

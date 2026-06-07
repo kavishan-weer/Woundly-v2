@@ -1,7 +1,8 @@
+import { getCurrentUser } from "./auth.js";
 import { showView } from "./navigation.js";
 import { compareEntries, getCoverage, getTrend } from "./progress.js";
-import { state } from "./state.js";
-import { formatClass, formatFullDate, formatShortDate, formatTissueGroup, relativeDate } from "./utils.js";
+import { deleteEntry, state } from "./state.js";
+import { formatClass, formatFullDate, formatShortDate, formatTissueGroup, relativeDate, showToast } from "./utils.js";
 
 export function renderAll() {
   setTodayLabel();
@@ -10,14 +11,16 @@ export function renderAll() {
   renderProvider();
 }
 
-export function renderResult(entry) {
+export function renderResult(entry, entryIndex = 0) {
   const model = entry.modelAnalysis;
-  const previous = state.entries[1];
+  const previousIndex = entryIndex + 1;
+  const previous = state.entries[previousIndex];
   const comparison = previous ? compareEntries(entry, previous) : "This is the baseline image. Upload another photo later to calculate a visual progress signal.";
   const quality = model.photo_quality;
   const qualityText = quality.notes.length ? quality.notes.join(" ") : "Lighting and sharpness checks passed.";
   const [red, green, blue] = model.features.mean_wound_rgb;
   const tissue = model.tissue_color_analysis;
+  const isFromTimeline = entryIndex > 0 || state.entries.length > 1;
   document.querySelector("#result-content").innerHTML = `
     <div class="result-grid">
       <section class="panel">
@@ -91,12 +94,36 @@ function renderTimeline() {
   document.querySelector("#timeline-list").innerHTML = entries.map((entry, index) => {
     const model = entry.modelAnalysis;
     return `<article class="panel timeline-card">
-      <img class="timeline-thumb" src="${entry.photo}" alt="Wound upload from ${formatFullDate(entry.date)}" />
-      <div><div class="timeline-card-top"><div><span class="eyebrow muted">${index === 0 ? "Latest photo" : "Journal photo"}</span><h3>${formatFullDate(entry.date)}</h3></div><span class="trend-badge">${formatClass(model.classification.label)}</span></div>
+      <img class="timeline-thumb clickable-thumb" src="${entry.photo}" alt="Wound upload from ${formatFullDate(entry.date)}" data-view-index="${index}" />
+      <div><div class="timeline-card-top"><div><span class="eyebrow muted">${index === 0 ? "Latest photo" : "Journal photo"}</span><h3>${formatFullDate(entry.date)}</h3></div><div class="timeline-card-actions"><span class="trend-badge">${formatClass(model.classification.label)}</span><button class="delete-entry-button" data-delete-id="${entry.id}" title="Delete this entry"><svg viewBox="0 0 24 24"><path d="M3 6h18m-2 0v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m-6 5v6m4-6v6" /></svg></button></div></div>
       <p>${index < entries.length - 1 ? compareEntries(entry, entries[index + 1]) : "Baseline image for future visual comparisons."}</p>
-      <div class="tag-row"><span class="mini-tag">${model.segmentation.coverage_percent}% coverage</span><span class="mini-tag">${model.segmentation.perimeter_pixels} px perimeter</span><span class="mini-tag">${Math.round(model.classification.confidence * 100)}% class confidence</span>${model.tissue_color_analysis ? `<span class="mini-tag">${formatTissueGroup(model.tissue_color_analysis.dominant_group)}</span>` : ""}</div></div>
+      <div class="timeline-card-bottom"><div class="tag-row"><span class="mini-tag">${model.segmentation.coverage_percent}% coverage</span><span class="mini-tag">${model.segmentation.perimeter_pixels} px perimeter</span><span class="mini-tag">${Math.round(model.classification.confidence * 100)}% class confidence</span>${model.tissue_color_analysis ? `<span class="mini-tag">${formatTissueGroup(model.tissue_color_analysis.dominant_group)}</span>` : ""}</div><button class="view-detail-button" data-view-index="${index}"><svg viewBox="0 0 24 24"><path d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7Z" /></svg>View details</button></div></div>
     </article>`;
   }).join("");
+
+  // Wire up view-detail buttons and clickable thumbnails
+  document.querySelectorAll(".view-detail-button, .clickable-thumb").forEach((el) => {
+    el.addEventListener("click", () => {
+      const index = parseInt(el.dataset.viewIndex, 10);
+      renderResult(entries[index], index);
+      showView("result");
+    });
+  });
+
+  // Wire up delete buttons
+  document.querySelectorAll(".delete-entry-button").forEach((button) => {
+    button.addEventListener("click", async (e) => {
+      e.stopPropagation();
+      if (!confirm("Delete this check-in? This cannot be undone.")) return;
+      try {
+        await deleteEntry(button.dataset.deleteId);
+        renderAll();
+        showToast("Entry deleted.");
+      } catch (error) {
+        showToast(error.message);
+      }
+    });
+  });
 }
 
 function renderTissueComposition(tissue) {
@@ -137,4 +164,12 @@ export function setNextCheckinDate() {
   next.setDate(next.getDate() + 3);
   document.querySelector("#next-day").textContent = String(next.getDate()).padStart(2, "0");
   document.querySelector("#next-month").textContent = next.toLocaleDateString("en-US", { month: "short" }).toUpperCase();
+}
+
+export function updateUserProfile() {
+  const user = getCurrentUser();
+  if (!user) return;
+  const initials = user.username.slice(0, 2).toUpperCase();
+  document.querySelector("#user-avatar").textContent = initials;
+  document.querySelector("#user-display-name").textContent = user.username;
 }

@@ -1,5 +1,7 @@
+import { authFetch } from "./auth.js";
+
 export async function analyzePhoto(photo) {
-  const response = await fetch("/api/analyze", {
+  const response = await authFetch("/api/analyze", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ image: photo }),

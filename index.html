@@ -17,7 +17,61 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <div class="app-shell">
+    <!-- ── Auth overlay ──────────────────────────────── -->
+    <div class="auth-view" id="auth-view">
+      <div class="auth-card">
+        <div class="auth-brand">
+          <svg viewBox="0 0 40 40" role="img"><path d="M20 6v28M6 20h28" /><circle cx="20" cy="20" r="17" /></svg>
+          <span>Woundly</span>
+        </div>
+        <span class="auth-tagline">Your private wound-healing companion.<br/>Sign in to track your recovery.</span>
+
+        <div class="auth-tabs">
+          <button class="auth-tab active" id="tab-login" type="button">Sign in</button>
+          <button class="auth-tab" id="tab-register" type="button">Create account</button>
+        </div>
+
+        <div class="auth-error hidden" id="auth-error"></div>
+
+        <!-- Login form -->
+        <form class="auth-form" id="login-form">
+          <div class="auth-field">
+            <label for="login-username">Username</label>
+            <input id="login-username" type="text" placeholder="Enter your username" autocomplete="username" required />
+          </div>
+          <div class="auth-field">
+            <label for="login-password">Password</label>
+            <input id="login-password" type="password" placeholder="Enter your password" autocomplete="current-password" required />
+          </div>
+          <button class="auth-submit" type="submit">Sign in</button>
+        </form>
+
+        <!-- Register form -->
+        <form class="auth-form hidden" id="register-form">
+          <div class="auth-field">
+            <label for="register-username">Username</label>
+            <input id="register-username" type="text" placeholder="Choose a username" autocomplete="username" required />
+          </div>
+          <div class="auth-field">
+            <label for="register-password">Password</label>
+            <input id="register-password" type="password" placeholder="Create a password" autocomplete="new-password" required />
+          </div>
+          <div class="auth-field">
+            <label for="register-confirm">Confirm password</label>
+            <input id="register-confirm" type="password" placeholder="Re-enter your password" autocomplete="new-password" required />
+          </div>
+          <button class="auth-submit" type="submit">Create account</button>
+        </form>
+
+        <div class="auth-footer">
+          <svg viewBox="0 0 24 24"><path d="M12 21s7-3.4 7-9V5l-7-2-7 2v7c0 5.6 7 9 7 9Z" /></svg>
+          Your data stays on this server · Private by design
+        </div>
+      </div>
+    </div>
+
+    <!-- ── App shell ─────────────────────────────────── -->
+    <div class="app-shell hidden" id="app-shell">
       <aside class="sidebar" id="sidebar">
         <div class="brand">
           <div class="brand-mark" aria-hidden="true">
@@ -57,16 +111,19 @@
             <svg viewBox="0 0 24 24"><path d="M12 21s7-3.4 7-9V5l-7-2-7 2v7c0 5.6 7 9 7 9Zm0-12v6m-3-3h6" /></svg>
             <div>
               <strong>Private by design</strong>
-              <span>Photos stay on this device</span>
+              <span>Data stored securely on server</span>
             </div>
           </div>
-          <button class="profile">
-            <span class="avatar">KW</span>
+          <div class="profile">
+            <span class="avatar" id="user-avatar">?</span>
             <span class="profile-copy">
-              <strong>My care journal</strong>
+              <strong id="user-display-name">My care journal</strong>
               <small>Personal workspace</small>
             </span>
-            <span class="profile-more">···</span>
+          </div>
+          <button class="logout-button" id="logout-button" type="button">
+            <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4m7 14 5-5-5-5m5 5H9" /></svg>
+            Sign out
           </button>
         </div>
       </aside>
@@ -247,7 +304,10 @@
 
         <section class="page" id="result-view">
           <div class="result-topline">
-            <button class="back-button" data-go="dashboard"><span>←</span> Back to overview</button>
+            <div class="result-back-buttons">
+              <button class="back-button" data-go="dashboard"><span>←</span> Overview</button>
+              <button class="back-button" data-go="timeline"><span>←</span> Journal</button>
+            </div>
             <span class="soft-badge">Saved to your journal</span>
           </div>
           <div id="result-content"></div>

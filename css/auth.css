@@ -1,0 +1,278 @@
+/* ── Auth page ──────────────────────────────────────────── */
+
+.auth-view {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  padding: 24px;
+  background:
+    radial-gradient(ellipse at 20% 80%, rgba(23, 125, 121, .15) 0%, transparent 55%),
+    radial-gradient(ellipse at 80% 20%, rgba(104, 184, 173, .12) 0%, transparent 50%),
+    linear-gradient(160deg, #0f2e31 0%, #153e43 35%, #1a4a4f 65%, #122d30 100%);
+  overflow-y: auto;
+}
+
+.auth-view.hidden { display: none; }
+
+/* floating ambient shapes */
+.auth-view::before,
+.auth-view::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.auth-view::before {
+  width: 420px;
+  height: 420px;
+  top: -80px;
+  right: -60px;
+  border: 1px solid rgba(104, 184, 173, .1);
+  animation: auth-orbit 28s linear infinite;
+}
+.auth-view::after {
+  width: 300px;
+  height: 300px;
+  bottom: -60px;
+  left: -40px;
+  border: 1px solid rgba(104, 184, 173, .07);
+  animation: auth-orbit 22s linear infinite reverse;
+}
+
+@keyframes auth-orbit {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ── Card ───────────────────────────────────────────────── */
+
+.auth-card {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  padding: 40px 36px 36px;
+  border: 1px solid rgba(255, 255, 255, .1);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, .06);
+  box-shadow:
+    0 24px 64px rgba(0, 0, 0, .25),
+    inset 0 1px 0 rgba(255, 255, 255, .08);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  animation: card-in .5s ease;
+}
+
+@keyframes card-in {
+  from { opacity: 0; transform: translateY(16px) scale(.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ── Brand inside card ──────────────────────────────────── */
+
+.auth-brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  color: #fff;
+  font-family: "Manrope", sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -.5px;
+}
+
+.auth-brand svg {
+  width: 32px;
+  height: 32px;
+  stroke-width: 2.4;
+  color: #8fd4ca;
+}
+
+.auth-tagline {
+  display: block;
+  margin-bottom: 32px;
+  color: #8baeb0;
+  font-size: 13px;
+  text-align: center;
+  line-height: 1.5;
+}
+
+/* ── Tabs ───────────────────────────────────────────────── */
+
+.auth-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  margin-bottom: 28px;
+  padding: 4px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, .06);
+}
+
+.auth-tab {
+  padding: 10px;
+  border: 0;
+  border-radius: 9px;
+  color: #8baeb0;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 700;
+  transition: .22s ease;
+}
+
+.auth-tab:hover { color: #c5e0df; }
+.auth-tab.active {
+  color: #fff;
+  background: rgba(255, 255, 255, .12);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .15);
+}
+
+/* ── Forms ──────────────────────────────────────────────── */
+
+.auth-form { display: grid; gap: 16px; }
+.auth-form.hidden { display: none; }
+
+.auth-field {
+  position: relative;
+}
+
+.auth-field label {
+  display: block;
+  margin-bottom: 6px;
+  color: #9cbcbe;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+}
+
+.auth-field input {
+  width: 100%;
+  padding: 13px 14px;
+  border: 1px solid rgba(255, 255, 255, .12);
+  border-radius: 11px;
+  color: #fff;
+  background: rgba(255, 255, 255, .06);
+  font-size: 14px;
+  outline: none;
+  transition: .2s ease;
+}
+
+.auth-field input::placeholder { color: rgba(255, 255, 255, .25); }
+.auth-field input:focus {
+  border-color: rgba(104, 184, 173, .5);
+  background: rgba(255, 255, 255, .09);
+  box-shadow: 0 0 0 3px rgba(104, 184, 173, .12);
+}
+
+/* ── Submit button ──────────────────────────────────────── */
+
+.auth-submit {
+  width: 100%;
+  padding: 14px;
+  margin-top: 4px;
+  border: 0;
+  border-radius: 12px;
+  color: #fff;
+  background: linear-gradient(135deg, #1a8a85 0%, #177d79 100%);
+  box-shadow: 0 8px 24px rgba(23, 125, 121, .3);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: .22s ease;
+}
+
+.auth-submit:hover {
+  background: linear-gradient(135deg, #1f9b96 0%, #1a8a85 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 12px 28px rgba(23, 125, 121, .35);
+}
+
+.auth-submit:active { transform: translateY(0); }
+.auth-submit:disabled { opacity: .65; cursor: wait; transform: none; }
+
+/* ── Error display ──────────────────────────────────────── */
+
+.auth-error {
+  padding: 10px 13px;
+  border-radius: 10px;
+  color: #f0a89e;
+  background: rgba(181, 79, 67, .15);
+  border: 1px solid rgba(181, 79, 67, .2);
+  font-size: 12px;
+  line-height: 1.45;
+  text-align: center;
+  animation: shake .35s ease;
+}
+
+.auth-error.hidden { display: none; }
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%      { transform: translateX(-6px); }
+  40%      { transform: translateX(5px); }
+  60%      { transform: translateX(-4px); }
+  80%      { transform: translateX(3px); }
+}
+
+/* ── Footer note ────────────────────────────────────────── */
+
+.auth-footer {
+  margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, .06);
+  color: #6a9294;
+  font-size: 10px;
+  text-align: center;
+  line-height: 1.55;
+}
+
+.auth-footer svg {
+  display: inline-block;
+  width: 13px;
+  height: 13px;
+  vertical-align: -2px;
+  margin-right: 3px;
+  color: #5a9e96;
+}
+
+/* ── Logout button (sidebar) ────────────────────────────── */
+
+.logout-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 9px;
+  margin-top: 6px;
+  border: 1px solid rgba(255, 255, 255, .1);
+  border-radius: 9px;
+  color: #bbd3d3;
+  background: transparent;
+  font-size: 11px;
+  font-weight: 600;
+  transition: .2s ease;
+}
+
+.logout-button:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, .08);
+}
+
+.logout-button svg { width: 14px; height: 14px; }
+
+/* ── Responsive ─────────────────────────────────────────── */
+
+@media (max-width: 480px) {
+  .auth-card {
+    padding: 32px 24px 28px;
+    border-radius: 20px;
+  }
+  .auth-brand { font-size: 20px; }
+  .auth-tagline { font-size: 12px; margin-bottom: 24px; }
+}

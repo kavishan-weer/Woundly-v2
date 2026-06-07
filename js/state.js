@@ -1,23 +1,42 @@
-const STORAGE_KEY = "woundly-photo-checkins-v2";
+import { authFetch } from "./auth.js";
 
 export const state = {
-  entries: loadEntries(),
+  entries: [],
   currentPhoto: "",
 };
 
-export function addEntry(entry) {
+export async function loadEntries() {
+  try {
+    const response = await authFetch("/api/entries");
+    if (!response.ok) throw new Error("Failed to load entries.");
+    state.entries = await response.json();
+  } catch {
+    state.entries = [];
+  }
+}
+
+export async function addEntry(entry) {
+  const response = await authFetch("/api/entries", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(entry),
+  });
+  if (!response.ok) {
+    const data = await response.json();
+    throw new Error(data.error || "Failed to save entry.");
+  }
   state.entries.unshift(entry);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state.entries));
 }
 
 export function setCurrentPhoto(photo) {
   state.currentPhoto = photo;
 }
 
-function loadEntries() {
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-  } catch {
-    return [];
+export async function deleteEntry(entryId) {
+  const response = await authFetch(`/api/entries/${entryId}`, { method: "DELETE" });
+  if (!response.ok) {
+    const data = await response.json();
+    throw new Error(data.error || "Failed to delete entry.");
   }
+  state.entries = state.entries.filter((e) => String(e.id) !== String(entryId));
 }
