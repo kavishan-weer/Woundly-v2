@@ -63,6 +63,11 @@
           <button class="auth-submit" type="submit">Create account</button>
         </form>
 
+        <div class="clinician-link-row">
+          <span>Are you a clinician?</span>
+          <a href="clinician.html">Clinician Portal &rarr;</a>
+        </div>
+
         <div class="auth-footer">
           <svg viewBox="0 0 24 24"><path d="M12 21s7-3.4 7-9V5l-7-2-7 2v7c0 5.6 7 9 7 9Z" /></svg>
           Your data stays on this server · Private by design
@@ -95,10 +100,6 @@
           <button class="nav-item" data-view="timeline">
             <svg viewBox="0 0 24 24"><path d="M5 5v14h14M8 15l3-4 3 2 4-6" /></svg>
             <span>Progress</span>
-          </button>
-          <button class="nav-item" data-view="provider">
-            <svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2m7-10a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm10-3v6m-3-3h6" /></svg>
-            <span>Provider view</span>
           </button>
           <button class="nav-item" data-view="guidance">
             <svg viewBox="0 0 24 24"><path d="M12 18h.01M9.6 9a2.5 2.5 0 1 1 4.7 1.2c-.8 1.4-2.3 1.6-2.3 3.3M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Z" /></svg>
@@ -254,7 +255,7 @@
           <div class="page-intro">
             <span class="eyebrow muted">New progress entry</span>
             <h2>How is the wound looking today?</h2>
-            <p>Add one clear photo. The AI will segment the wound, extract visual features, estimate a category, and compare it with prior uploads.</p>
+            <p>Add one clear photo. The AI will segment the wound, extract visual features, and compare it with prior uploads.</p>
           </div>
 
           <div class="checkin-grid photo-only-grid">
@@ -288,7 +289,6 @@
                   <ul>
                     <li>U-Net wound-boundary segmentation</li>
                     <li>Frame coverage, perimeter, shape, and segmented color composition</li>
-                    <li>Pressure-injury category estimate</li>
                     <li>Progress comparison after a second photo</li>
                   </ul>
                 </div>
@@ -367,49 +367,6 @@
           </article>
         </section>
 
-        <section class="page" id="provider-view">
-          <div class="page-intro timeline-intro">
-            <div>
-              <span class="eyebrow muted">Clinical support prototype</span>
-              <h2>Patient review queue</h2>
-              <p>A simplified provider interface for reviewing progress, prioritizing concerning changes, and adding clinical oversight.</p>
-            </div>
-            <span class="soft-badge">Demo workspace</span>
-          </div>
-          <div class="provider-metrics">
-            <article class="metric-card">
-              <div class="metric-icon sea"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2m3-10a4 4 0 1 0 0-8 4 4 0 0 0 0 8" /></svg></div>
-              <div><span>Tracked patients</span><strong id="provider-patient-count">4 patients</strong><small>Including local journal</small></div>
-            </article>
-            <article class="metric-card">
-              <div class="metric-icon coral"><svg viewBox="0 0 24 24"><path d="M12 9v4m0 4h.01M10.3 4.3 2.9 17a2 2 0 0 0 1.7 3h14.8a2 2 0 0 0 1.7-3L13.7 4.3a2 2 0 0 0-3.4 0Z" /></svg></div>
-              <div><span>Needs review</span><strong id="provider-review-count">2 cases</strong><small>Prioritized by visual progress signals</small></div>
-            </article>
-            <article class="metric-card">
-              <div class="metric-icon lavender"><svg viewBox="0 0 24 24"><path d="M6 3v3m12-3v3M4 9h16M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z" /></svg></div>
-              <div><span>Recent uploads</span><strong id="provider-upload-count">3 today</strong><small>Awaiting clinical oversight</small></div>
-            </article>
-          </div>
-          <section class="panel provider-table-panel">
-            <div class="panel-header">
-              <div>
-                <span class="eyebrow muted">Priority list</span>
-                <h3>Remote monitoring overview</h3>
-              </div>
-              <span class="model-chip">Decision support only</span>
-            </div>
-            <div class="provider-table-wrap">
-              <table class="provider-table">
-                <thead><tr><th>Patient</th><th>Last check-in</th><th>Reported trend</th><th>Latest indicator</th><th>Review priority</th></tr></thead>
-                <tbody id="provider-table-body"></tbody>
-              </table>
-            </div>
-          </section>
-          <article class="provider-note">
-            <strong>Prototype boundary</strong>
-            <p>Sample patients are fictional. The local journal row uses photo-based measurements from the connected proof-of-concept models. Model outputs are not clinically validated.</p>
-          </article>
-        </section>
       </main>
     </div>
     <div class="toast" id="toast" role="status"></div>

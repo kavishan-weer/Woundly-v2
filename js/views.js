@@ -2,13 +2,12 @@ import { getCurrentUser } from "./auth.js";
 import { showView } from "./navigation.js";
 import { compareEntries, getCoverage, getTrend } from "./progress.js";
 import { deleteEntry, state } from "./state.js";
-import { formatClass, formatFullDate, formatShortDate, formatTissueGroup, relativeDate, showToast } from "./utils.js";
+import { formatFullDate, formatShortDate, formatTissueGroup, relativeDate, showToast } from "./utils.js";
 
 export function renderAll() {
   setTodayLabel();
   renderDashboard();
   renderTimeline();
-  renderProvider();
 }
 
 export function renderResult(entry, entryIndex = 0) {
@@ -21,6 +20,42 @@ export function renderResult(entry, entryIndex = 0) {
   const [red, green, blue] = model.features.mean_wound_rgb;
   const tissue = model.tissue_color_analysis;
   const isFromTimeline = entryIndex > 0 || state.entries.length > 1;
+
+  const clinStatus = entry.clinician_status || "unreviewed";
+  const clinNote = entry.clinician_note || "";
+  const clinReviewer = entry.reviewed_by || "";
+  const clinReviewedAt = entry.reviewed_at || "";
+
+  let clinicianFeedbackHtml = "";
+  if (clinStatus === "reviewed" || clinStatus === "flagged") {
+    const isFlagged = clinStatus === "flagged";
+    const statusLabel = isFlagged ? "Attention Requested" : "Reviewed by Clinician";
+    const badgeClass = isFlagged ? "badge-flagged" : "badge-reviewed";
+    const formattedReviewedDate = clinReviewedAt 
+      ? new Date(clinReviewedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) 
+      : "";
+    
+    clinicianFeedbackHtml = `
+      <div class="clinician-feedback-card ${isFlagged ? 'flagged' : ''}">
+        <div class="feedback-header">
+          <span class="feedback-badge ${badgeClass}">${statusLabel}</span>
+          <small class="feedback-time">Reviewed on ${formattedReviewedDate} by <strong>${clinReviewer}</strong></small>
+        </div>
+        <p class="feedback-note">"${clinNote || 'No specific comments left.'}"</p>
+      </div>
+    `;
+  } else {
+    clinicianFeedbackHtml = `
+      <div class="clinician-feedback-card pending">
+        <div class="feedback-header">
+          <span class="feedback-badge badge-pending">Pending Clinician Review</span>
+          <small class="feedback-time">Submitted to remote monitoring queue</small>
+        </div>
+        <p class="feedback-note" style="color: var(--muted); font-size: 11px; margin: 0;">A healthcare provider will review your check-in shortly. Check back later for clinician notes.</p>
+      </div>
+    `;
+  }
+
   document.querySelector("#result-content").innerHTML = `
     <div class="result-grid">
       <section class="panel">
@@ -35,11 +70,13 @@ export function renderResult(entry, entryIndex = 0) {
         <span class="assessment-status">Photo analysis complete</span>
         <h2>${previous ? getTrend(state.entries).title : "Baseline image analyzed"}</h2>
         <p>${comparison}</p>
+        
+        ${clinicianFeedbackHtml}
+
         <div class="prototype-callout"><strong>Decision-support note:</strong> these are proof-of-concept image-analysis outputs, not a diagnosis or treatment recommendation.</div>
         <div class="analysis-metrics">
           <div><span>Wound coverage</span><strong>${model.segmentation.coverage_percent}%</strong><small>Of image frame</small></div>
           <div><span>Mask perimeter</span><strong>${model.segmentation.perimeter_pixels} px</strong><small>Boundary length</small></div>
-          <div><span>Category estimate</span><strong>${formatClass(model.classification.label)}</strong><small>${Math.round(model.classification.confidence * 100)}% model confidence</small></div>
           <div><span>Shape circularity</span><strong>${model.features.shape_circularity}</strong><small>0 irregular · 1 circular</small></div>
         </div>
         <div class="insight-list">
@@ -95,9 +132,9 @@ function renderTimeline() {
     const model = entry.modelAnalysis;
     return `<article class="panel timeline-card">
       <img class="timeline-thumb clickable-thumb" src="${entry.photo}" alt="Wound upload from ${formatFullDate(entry.date)}" data-view-index="${index}" />
-      <div><div class="timeline-card-top"><div><span class="eyebrow muted">${index === 0 ? "Latest photo" : "Journal photo"}</span><h3>${formatFullDate(entry.date)}</h3></div><div class="timeline-card-actions"><span class="trend-badge">${formatClass(model.classification.label)}</span><button class="delete-entry-button" data-delete-id="${entry.id}" title="Delete this entry"><svg viewBox="0 0 24 24"><path d="M3 6h18m-2 0v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m-6 5v6m4-6v6" /></svg></button></div></div>
+      <div><div class="timeline-card-top"><div><span class="eyebrow muted">${index === 0 ? "Latest photo" : "Journal photo"}</span><h3>${formatFullDate(entry.date)}</h3></div><div class="timeline-card-actions"><button class="delete-entry-button" data-delete-id="${entry.id}" title="Delete this entry"><svg viewBox="0 0 24 24"><path d="M3 6h18m-2 0v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m-6 5v6m4-6v6" /></svg></button></div></div>
       <p>${index < entries.length - 1 ? compareEntries(entry, entries[index + 1]) : "Baseline image for future visual comparisons."}</p>
-      <div class="timeline-card-bottom"><div class="tag-row"><span class="mini-tag">${model.segmentation.coverage_percent}% coverage</span><span class="mini-tag">${model.segmentation.perimeter_pixels} px perimeter</span><span class="mini-tag">${Math.round(model.classification.confidence * 100)}% class confidence</span>${model.tissue_color_analysis ? `<span class="mini-tag">${formatTissueGroup(model.tissue_color_analysis.dominant_group)}</span>` : ""}</div><button class="view-detail-button" data-view-index="${index}"><svg viewBox="0 0 24 24"><path d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7Z" /></svg>View details</button></div></div>
+      <div class="timeline-card-bottom"><div class="tag-row"><span class="mini-tag">${model.segmentation.coverage_percent}% coverage</span><span class="mini-tag">${model.segmentation.perimeter_pixels} px perimeter</span>${model.tissue_color_analysis ? `<span class="mini-tag">${formatTissueGroup(model.tissue_color_analysis.dominant_group)}</span>` : ""}</div><button class="view-detail-button" data-view-index="${index}"><svg viewBox="0 0 24 24"><path d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7Z" /></svg>View details</button></div></div>
     </article>`;
   }).join("");
 
@@ -141,19 +178,7 @@ function renderTissueComposition(tissue) {
   </section>`;
 }
 
-function renderProvider() {
-  const latest = state.entries[0];
-  const localTrend = latest ? getTrend(state.entries).title : "Awaiting baseline";
-  const localIndicator = latest ? `${getCoverage(latest)}% frame coverage` : "No image analysis yet";
-  const patients = [
-    { name: "N. Perera", code: "WD-1042", date: "Today, 08:45", trend: "Deterioration signal", indicator: "Coverage increased 11%", priority: "High" },
-    { name: "My photo journal", code: "LOCAL-001", date: latest ? relativeDate(latest.date) : "Not started", trend: localTrend, indicator: localIndicator, priority: latest && getTrend(state.entries).key === "deteriorating" ? "High" : "Routine" },
-    { name: "S. Fernando", code: "WD-1038", date: "Yesterday", trend: "Improvement signal", indicator: "Coverage decreased 8%", priority: "Routine" },
-  ];
-  document.querySelector("#provider-table-body").innerHTML = patients.map((patient) => `<tr><td><strong>${patient.name}</strong><small>${patient.code}</small></td><td>${patient.date}</td><td>${patient.trend}</td><td>${patient.indicator}</td><td><span class="priority-badge ${patient.priority.toLowerCase()}">${patient.priority}</span></td></tr>`).join("");
-  document.querySelector("#provider-patient-count").textContent = `${patients.length} patients`;
-  document.querySelector("#provider-review-count").textContent = `${patients.filter((patient) => patient.priority !== "Routine").length} cases`;
-}
+
 
 function setTodayLabel() {
   document.querySelector("#today-label").textContent = new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });

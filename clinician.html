@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Woundly Clinician Portal provides a remote monitoring review queue and analytics for clinical oversight."
+    />
+    <title>Woundly | Clinician Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="css/clinician.css" />
+  </head>
+  <body>
+    <!-- ── Auth overlay ──────────────────────────────── -->
+    <div class="auth-view" id="auth-view">
+      <div class="auth-card">
+        <div class="auth-brand">
+          <svg viewBox="0 0 40 40" role="img"><path d="M20 6v28M6 20h28" /><circle cx="20" cy="20" r="17" /></svg>
+          <span>Woundly Clinician</span>
+        </div>
+        <span class="auth-tagline">Clinical remote monitoring portal.<br/>Sign in to review patient check-ins.</span>
+
+        <div class="auth-tabs">
+          <button class="auth-tab active" id="tab-login" type="button">Sign in</button>
+          <button class="auth-tab" id="tab-register" type="button">Register Clinician</button>
+        </div>
+
+        <div class="auth-error hidden" id="auth-error"></div>
+
+        <!-- Login form -->
+        <form class="auth-form" id="login-form">
+          <div class="auth-field">
+            <label for="login-username">Clinician Username</label>
+            <input id="login-username" type="text" placeholder="Enter your username" autocomplete="username" required />
+          </div>
+          <div class="auth-field">
+            <label for="login-password">Password</label>
+            <input id="login-password" type="password" placeholder="Enter your password" autocomplete="current-password" required />
+          </div>
+          <button class="auth-submit" type="submit">Sign in</button>
+        </form>
+
+        <!-- Register form -->
+        <form class="auth-form hidden" id="register-form">
+          <div class="auth-field">
+            <label for="register-username">Clinician Username</label>
+            <input id="register-username" type="text" placeholder="Choose a username" autocomplete="username" required />
+          </div>
+          <div class="auth-field">
+            <label for="register-password">Password</label>
+            <input id="register-password" type="password" placeholder="Create a password" autocomplete="new-password" required />
+          </div>
+          <div class="auth-field">
+            <label for="register-confirm">Confirm password</label>
+            <input id="register-confirm" type="password" placeholder="Re-enter your password" autocomplete="new-password" required />
+          </div>
+          <div class="auth-field">
+            <label for="register-code">Clinician Registration Code</label>
+            <input id="register-code" type="text" placeholder="Enter activation code (CLINIC2026)" required />
+          </div>
+          <button class="auth-submit" type="submit">Register Account</button>
+        </form>
+
+        <div class="clinician-link-row">
+          <span>Are you a patient?</span>
+          <a href="index.html">Patient Portal &rarr;</a>
+        </div>
+
+        <div class="auth-footer">
+          <svg viewBox="0 0 24 24"><path d="M12 21s7-3.4 7-9V5l-7-2-7 2v7c0 5.6 7 9 7 9Z" /></svg>
+          Secure connection · HIPAA Compliant Portal Design
+        </div>
+      </div>
+    </div>
+
+    <!-- ── App shell ─────────────────────────────────── -->
+    <div class="app-shell hidden" id="app-shell">
+      <aside class="sidebar" id="sidebar">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 40 40" role="img">
+              <path d="M20 6v28M6 20h28" />
+              <circle cx="20" cy="20" r="17" />
+            </svg>
+          </div>
+          <span>Woundly Clinical</span>
+        </div>
+
+        <nav class="main-nav" aria-label="Main navigation">
+          <button class="nav-item active" data-view="queue" id="nav-queue-btn">
+            <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16" /></svg>
+            <span>Review Queue</span>
+          </button>
+          <button class="nav-item" data-view="patients" id="nav-patients-btn">
+            <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm14 10v-2a4 4 0 0 0-3-3.87m-4-12a4 4 0 0 1 0 7.75" /></svg>
+            <span>Patient Directory</span>
+          </button>
+        </nav>
+
+        <div class="sidebar-foot">
+          <div class="privacy-chip">
+            <svg viewBox="0 0 24 24"><path d="M12 21s7-3.4 7-9V5l-7-2-7 2v7c0 5.6 7 9 7 9Zm0-12v6m-3-3h6" /></svg>
+            <div>
+              <strong>Clinician Mode</strong>
+              <span>Wound progress oversight</span>
+            </div>
+          </div>
+          <div class="profile">
+            <span class="avatar" id="user-avatar">DR</span>
+            <span class="profile-copy">
+              <strong id="user-display-name">Clinician Workspace</strong>
+              <small>Authorized Medical Staff</small>
+            </span>
+          </div>
+          <button class="logout-button" id="logout-button" type="button">
+            <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4m7 14 5-5-5-5m5 5H9" /></svg>
+            Sign out
+          </button>
+        </div>
+      </aside>
+
+      <main>
+        <header class="topbar">
+          <button class="menu-toggle" id="menu-toggle" aria-label="Open navigation">
+            <svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
+          </button>
+          <div class="topbar-copy">
+            <p id="today-label"></p>
+            <h1 id="page-title">Monitoring Review Queue</h1>
+          </div>
+        </header>
+
+        <!-- ── Queue View ─────────────────────────────────── -->
+        <section class="page active" id="queue-view">
+          <div class="metric-grid">
+            <article class="metric-card">
+              <div class="metric-icon sea"><svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2" /></svg></div>
+              <div><span>Total Submissions</span><strong id="stat-total-submissions">0</strong><small>Patient check-ins logged</small></div>
+            </article>
+            <article class="metric-card">
+              <div class="metric-icon lavender"><svg viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg></div>
+              <div><span>Pending Review</span><strong id="stat-pending-reviews" class="alert-text">0</strong><small>Require clinician oversight</small></div>
+            </article>
+            <article class="metric-card">
+              <div class="metric-icon coral"><svg viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3Z" /></svg></div>
+              <div><span>Flagged Cases</span><strong id="stat-flagged-cases" class="danger-text">0</strong><small>Marked for immediate review</small></div>
+            </article>
+          </div>
+
+          <div class="section-heading">
+            <div>
+              <span class="eyebrow muted">Real-time check-ins</span>
+              <h2>Submission Queue</h2>
+            </div>
+            <div class="filters-row">
+              <button class="filter-chip active" data-filter="all">All Submissions</button>
+              <button class="filter-chip" data-filter="unreviewed">Unreviewed</button>
+              <button class="filter-chip" data-filter="flagged">Flagged</button>
+            </div>
+          </div>
+
+          <div class="panel queue-panel">
+            <div class="empty-state hidden" id="queue-empty">
+              <div class="empty-icon">
+                <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2" /></svg>
+              </div>
+              <h3>No patient submissions match your filter</h3>
+              <p>Try clearing your active status filters.</p>
+            </div>
+            
+            <table class="clinician-table" id="queue-table">
+              <thead>
+                <tr>
+                  <th>Patient</th>
+                  <th>Checked In On</th>
+                  <th>Wound Area Coverage</th>
+                  <th>Dominant Color Group</th>
+                  <th>Image Quality</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="queue-tbody">
+                <!-- Dynamic rows -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ── Patients Directory View ─────────────────────── -->
+        <section class="page" id="patients-view">
+          <div class="section-heading">
+            <div>
+              <span class="eyebrow muted">Directory</span>
+              <h2>Patient Profiles</h2>
+            </div>
+            <div class="search-wrap">
+              <input type="text" id="patient-search-input" placeholder="Search patients by username..." />
+            </div>
+          </div>
+
+          <div class="panel queue-panel">
+            <div class="empty-state hidden" id="patients-empty">
+              <div class="empty-icon">
+                <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" /></svg>
+              </div>
+              <h3>No patients found</h3>
+              <p>Ensure the patient username is registered on this server.</p>
+            </div>
+            
+            <table class="clinician-table" id="patients-table">
+              <thead>
+                <tr>
+                  <th>Patient Username</th>
+                  <th>Total Submissions</th>
+                  <th>Latest Submission</th>
+                  <th>Latest Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="patients-tbody">
+                <!-- Dynamic rows -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ── Assessment Workspace View (Split Screen) ────── -->
+        <section class="page" id="assessment-view">
+          <div class="workspace-topline">
+            <button class="back-button" id="workspace-back-btn">
+              <svg viewBox="0 0 24 24"><path d="M19 12H5m7 7-7-7 7-7" /></svg>
+              Back to queue
+            </button>
+            <div class="workspace-patient-badge">
+              Patient: <strong id="workspace-username">PatientName</strong>
+            </div>
+          </div>
+
+          <div class="workspace-grid">
+            <!-- Left Workspace: Wound Photo and Overlays -->
+            <div class="workspace-visual-col">
+              <article class="panel">
+                <div class="panel-header">
+                  <h3>Wound Visual Evidence</h3>
+                  <label class="toggle-switch">
+                    <input type="checkbox" id="mask-toggle-checkbox" checked />
+                    <span class="toggle-slider"></span>
+                    <span class="toggle-label">Overlay Segmentation Mask</span>
+                  </label>
+                </div>
+                
+                <div class="assessment-image-wrap">
+                  <img class="assessment-photo" id="assessment-photo" src="" alt="Patient check-in photo" />
+                  <img class="assessment-mask-overlay" id="assessment-mask" src="" alt="U-Net segmentation mask" />
+                </div>
+                
+                <div class="overlay-legend-row">
+                  <span class="legend-color-box mask-box"></span>
+                  <span>U-Net boundary prediction (Dice 0.691)</span>
+                </div>
+              </article>
+
+              <!-- Patient History Panel -->
+              <article class="panel clinician-history-panel">
+                <div class="panel-header">
+                  <h3>Longitudinal Check-in History</h3>
+                </div>
+                <div class="history-list" id="assessment-history-list">
+                  <!-- Historical check-ins of this patient -->
+                </div>
+              </article>
+            </div>
+
+            <!-- Right Workspace: Analytics & Clinical Notes Form -->
+            <div class="workspace-form-col">
+              <!-- AI Metrics Panel -->
+              <article class="panel">
+                <div class="panel-header">
+                  <h3>Model-Extracted Analytics</h3>
+                </div>
+                <div class="analysis-metrics inline-metrics">
+                  <div><span>Wound coverage</span><strong id="metric-coverage">0%</strong><small>Of frame</small></div>
+                  <div><span>Mask perimeter</span><strong id="metric-perimeter">0 px</strong><small>Length</small></div>
+                  <div><span>Shape circularity</span><strong id="metric-circularity">0.00</strong><small>0-1 score</small></div>
+                </div>
+
+                <!-- Quality checks -->
+                <div class="quality-checks-card" id="quality-checks-panel">
+                  <strong>Photo Quality Parameters</strong>
+                  <div class="quality-chips-row" id="quality-chips-row">
+                    <!-- Dynamic chips -->
+                  </div>
+                </div>
+
+                <!-- Tissue color composition -->
+                <div id="tissue-composition-wrap">
+                  <!-- Tissue breakdown -->
+                </div>
+              </article>
+
+              <!-- Clinical Review form -->
+              <article class="panel assessment-action-card">
+                <h3>Submit Clinical Assessment</h3>
+                <form id="clinical-assessment-form">
+                  <div class="form-field">
+                    <label>Review Status</label>
+                    <div class="status-radio-group">
+                      <label class="status-radio-label radio-unreviewed">
+                        <input type="radio" name="review-status" value="unreviewed" required />
+                        <span>Unreviewed</span>
+                      </label>
+                      <label class="status-radio-label radio-reviewed">
+                        <input type="radio" name="review-status" value="reviewed" />
+                        <span>Reviewed</span>
+                      </label>
+                      <label class="status-radio-label radio-flagged">
+                        <input type="radio" name="review-status" value="flagged" />
+                        <span>Flagged (Attention)</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <div class="form-field">
+                    <label for="review-note">Clinical Monitoring Notes</label>
+                    <textarea id="review-note" placeholder="Write feedback, instructions, or observations for the patient..." rows="5"></textarea>
+                  </div>
+
+                  <button class="primary-button full-width" type="submit" id="save-review-btn">
+                    Save Assessment and Status
+                  </button>
+                </form>
+              </article>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+    
+    <div class="toast" id="toast" role="status"></div>
+    <script type="module" src="js/clinician_app.js"></script>
+  </body>
+</html>

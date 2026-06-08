@@ -3,7 +3,6 @@ const pageTitles = {
   "check-in": "New check-in",
   result: "Image analysis",
   timeline: "Progress timeline",
-  provider: "Provider review",
   guidance: "Photo guide",
 };
 

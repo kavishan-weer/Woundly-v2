@@ -21,11 +21,7 @@ SEGMENTATION_INFERENCE_MODEL = (
     SUPPLIED_SEGMENTATION_MODEL if SUPPLIED_SEGMENTATION_MODEL.exists() else SEGMENTATION_MODEL
 )
 SEGMENTATION_META = MODEL_DIR / "segmentation_meta.json"
-CLASSIFICATION_MODEL = MODEL_DIR / "pressure_injury_classifier.keras"
-CLASSIFICATION_META = MODEL_DIR / "classification_classes.json"
-MOBILENET_WEIGHTS = MODEL_DIR / "mobilenet_v2_160_no_top.h5"
-SEGMENTATION_SIZE = 224
-CLASSIFICATION_SIZE = 160
+SEGMENTATION_SIZE = 128
 
 
 def dice_coefficient(y_true, y_pred):
@@ -70,47 +66,30 @@ def build_unet(input_shape=(SEGMENTATION_SIZE, SEGMENTATION_SIZE, 3)):
         x = layers.Conv2D(filters, 3, padding="same", activation="relu")(x)
         return x
 
-    c1 = conv_block(inputs, 24)
+    c1 = conv_block(inputs, 32)
     p1 = layers.MaxPooling2D()(c1)
-    c2 = conv_block(p1, 48)
+    c2 = conv_block(p1, 64)
     p2 = layers.MaxPooling2D()(c2)
-    c3 = conv_block(p2, 96)
+    c3 = conv_block(p2, 128)
     p3 = layers.MaxPooling2D()(c3)
 
-    bridge = conv_block(p3, 192)
+    bridge = conv_block(p3, 256)
     bridge = layers.Dropout(0.15)(bridge)
 
     u3 = layers.UpSampling2D()(bridge)
     u3 = layers.Concatenate()([u3, c3])
-    c4 = conv_block(u3, 96)
+    c4 = conv_block(u3, 128)
     u2 = layers.UpSampling2D()(c4)
     u2 = layers.Concatenate()([u2, c2])
-    c5 = conv_block(u2, 48)
+    c5 = conv_block(u2, 64)
     u1 = layers.UpSampling2D()(c5)
     u1 = layers.Concatenate()([u1, c1])
-    c6 = conv_block(u1, 24)
+    c6 = conv_block(u1, 32)
     outputs = layers.Conv2D(1, 1, activation="sigmoid")(c6)
     return models.Model(inputs, outputs, name="compact_wound_unet")
 
 
-def build_classifier(class_count, input_shape=(CLASSIFICATION_SIZE, CLASSIFICATION_SIZE, 3)):
-    inputs = layers.Input(shape=input_shape)
-    x = layers.RandomFlip("horizontal")(inputs)
-    x = layers.RandomRotation(0.06)(x)
-    x = layers.RandomZoom(0.08)(x)
-    x = layers.Rescaling(scale=2.0, offset=-1.0)(x)
-    weights = str(MOBILENET_WEIGHTS) if MOBILENET_WEIGHTS.exists() else None
-    backbone = tf.keras.applications.MobileNetV2(
-        input_shape=input_shape,
-        include_top=False,
-        weights=weights,
-    )
-    backbone.trainable = False
-    x = backbone(x, training=False)
-    x = layers.GlobalAveragePooling2D()(x)
-    x = layers.Dropout(0.32)(x)
-    outputs = layers.Dense(class_count, activation="softmax")(x)
-    return models.Model(inputs, outputs, name="mobilenetv2_pressure_injury_classifier")
+
 
 
 def load_rgb_image(path_or_bytes, size):
@@ -134,11 +113,9 @@ def load_mask(path, size=SEGMENTATION_SIZE):
 
 class WoundAnalyzer:
     def __init__(self):
-        if not SEGMENTATION_INFERENCE_MODEL.exists() or not CLASSIFICATION_MODEL.exists():
+        if not SEGMENTATION_INFERENCE_MODEL.exists():
             raise FileNotFoundError("Train models first with: python train_models.py")
         self.segmenter = tf.keras.models.load_model(SEGMENTATION_INFERENCE_MODEL, compile=False)
-        self.classifier = tf.keras.models.load_model(CLASSIFICATION_MODEL, compile=False)
-        self.classes = json.loads(CLASSIFICATION_META.read_text())["classes"]
         self.mask_threshold = 0.5
         if SEGMENTATION_META.exists():
             self.mask_threshold = json.loads(SEGMENTATION_META.read_text()).get("threshold", 0.5)
@@ -150,26 +127,13 @@ class WoundAnalyzer:
         binary_mask = probabilities >= self.mask_threshold
         binary_mask = self._clean_mask(binary_mask)
 
-        class_image = load_rgb_image(image_bytes, CLASSIFICATION_SIZE)
-        class_probabilities = self.classifier.predict(class_image[None, ...], verbose=0)[0]
-        class_index = int(np.argmax(class_probabilities))
-
         return {
             "segmentation": self._segmentation_result(binary_mask, probabilities),
             "features": self._feature_result(binary_mask, color_image),
             "tissue_color_analysis": analyze_tissue_colors(binary_mask, color_image),
             "photo_quality": self._photo_quality(seg_image),
-            "classification": {
-                "label": self.classes[class_index],
-                "confidence": round(float(class_probabilities[class_index]), 4),
-                "probabilities": {
-                    label: round(float(probability), 4)
-                    for label, probability in zip(self.classes, class_probabilities)
-                },
-            },
             "model": {
                 "segmentation": "supplied_224px_wound_unet",
-                "classification": "mobilenetv2_pressure_injury_classifier",
                 "mask_threshold": self.mask_threshold,
             },
         }

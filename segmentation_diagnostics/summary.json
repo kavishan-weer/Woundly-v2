@@ -1,11 +1,11 @@
 {
-  "threshold": 0.2,
-  "raw_macro_dice": 0.3798,
-  "clean_macro_dice": 0.3922,
+  "threshold": 0.8,
+  "raw_macro_dice": 0.7114,
+  "clean_macro_dice": 0.691,
   "empty_ground_truth_count": 13,
-  "empty_clean_prediction_count": 24,
-  "mean_truth_coverage_percent": 1.3441,
-  "mean_raw_prediction_coverage_percent": 1.6479,
-  "mean_clean_prediction_coverage_percent": 1.5166,
-  "mean_probability": 0.0161
+  "empty_clean_prediction_count": 28,
+  "mean_truth_coverage_percent": 1.3422,
+  "mean_raw_prediction_coverage_percent": 1.5425,
+  "mean_clean_prediction_coverage_percent": 1.5158,
+  "mean_probability": 0.0162
 }

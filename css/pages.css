@@ -307,23 +307,7 @@ input[type="checkbox"] { accent-color: var(--teal); }
 .urgent-panel ul { display: grid; gap: 8px; padding-left: 20px; color: #835c55; font-size: 13px; }
 .urgent-panel .urgent-note { margin: 17px 0 0; color: #a25246; font-weight: 700; }
 
-.provider-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 16px; }
-.provider-table-panel { overflow: hidden; }
 .model-chip { padding: 6px 9px; border-radius: 30px; color: #85665f; background: #fff4ee; font-size: 9px; font-weight: 800; letter-spacing: .5px; text-transform: uppercase; }
-.provider-table-wrap { overflow-x: auto; margin-top: 15px; }
-.provider-table { width: 100%; min-width: 690px; border-collapse: collapse; text-align: left; }
-.provider-table th { padding: 9px 10px; border-bottom: 1px solid var(--line); color: var(--faint); font-size: 9px; letter-spacing: .7px; text-transform: uppercase; }
-.provider-table td { padding: 13px 10px; border-bottom: 1px solid #edf3f3; color: #647f81; font-size: 12px; }
-.provider-table tr:last-child td { border-bottom: 0; }
-.provider-table strong, .provider-table small { display: block; }
-.provider-table strong { margin-bottom: 2px; color: #3d6063; }
-.provider-table small { color: var(--faint); font-size: 9px; }
-.priority-badge { display: inline-flex; padding: 5px 8px; border-radius: 20px; font-size: 9px; font-weight: 800; text-transform: uppercase; }
-.priority-badge.high { color: #a54f43; background: #fff0ec; }
-.priority-badge.routine { color: #31756f; background: #e7f6f3; }
-.provider-note { margin-top: 14px; padding: 13px 15px; border: 1px solid #e5eeee; border-radius: 12px; background: #fbfdfd; }
-.provider-note strong { display: block; margin-bottom: 3px; color: #567375; font-size: 12px; }
-.provider-note p { margin: 0; font-size: 11px; }
 
 .toast {
   position: fixed;
@@ -346,3 +330,74 @@ input[type="checkbox"] { accent-color: var(--teal); }
 .toast.show { opacity: 1; transform: translateY(0); }
 
 .hidden { display: none !important; }
+
+/* ── Clinician Feedback Card ────────────────────────── */
+.clinician-feedback-card {
+  margin: 18px 0;
+  padding: 18px;
+  border-radius: var(--radius-sm);
+  border: 1px solid #cce8e5;
+  background: #f0fbf9;
+  box-shadow: 0 4px 12px rgba(23, 125, 121, 0.04);
+}
+
+.clinician-feedback-card.flagged {
+  border-color: #f7dbd1;
+  background: var(--danger-soft);
+  box-shadow: 0 4px 12px rgba(181, 79, 67, 0.04);
+}
+
+.clinician-feedback-card.pending {
+  border-color: var(--line);
+  background: var(--panel);
+  box-shadow: none;
+}
+
+.feedback-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.feedback-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+
+.feedback-badge.badge-reviewed {
+  color: #1a6d4c;
+  background: #e7f7ec;
+}
+
+.feedback-badge.badge-flagged {
+  color: var(--danger);
+  background: var(--danger-soft);
+}
+
+.feedback-badge.badge-pending {
+  color: #3b6b70;
+  background: var(--teal-soft);
+}
+
+.feedback-time {
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.feedback-note {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--ink);
+  font-style: italic;
+}
+

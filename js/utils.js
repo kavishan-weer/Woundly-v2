@@ -1,6 +1,4 @@
-export function formatClass(value) {
-  return value ? value.replaceAll("_", " ") : "--";
-}
+
 
 export function formatTissueGroup(value) {
   return {
