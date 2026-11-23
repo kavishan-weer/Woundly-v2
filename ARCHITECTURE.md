@@ -93,12 +93,4 @@ Current held-out baseline metrics:
 
 - segmentation macro Dice coefficient: `0.3922` at the calibrated `0.20` threshold.
 
-## Suggested implementation sequence
 
-1. Complete preprocessing and dataset split verification.
-2. Train and evaluate the segmentation model with Dice coefficient and IoU.
-3. Export a versioned segmentation artifact.
-4. Add persistent records with PostgreSQL and images/masks in object storage.
-5. Add a calibrated measurement reference to report physical units such as
-   square centimetres instead of image-frame coverage.
-6. Run external clinical validation before considering real-world use.
