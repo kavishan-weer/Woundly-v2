@@ -2,8 +2,6 @@
 
 Woundly is a browser-based wound progress tracking prototype. It lets a patient create photo check-ins, sends each image to a local Python server for wound analysis, saves the results in SQLite, and visualizes changes across check-ins. It also includes a clinician portal for reviewing entries.
 
-> [!IMPORTANT]
-> Woundly is an academic proof of concept, not a diagnostic or medical device. It does not validate tissue types, diagnose complications, recommend treatment, or replace assessment by a qualified healthcare professional.
 
 ## What happens in the project
 
@@ -163,7 +161,7 @@ The server creates or updates `woundly.db` automatically.
 The registration API supports a clinician role with registration code `CLINIC2026`. Open `http://localhost:4173/clinician.html` for the clinician interface.
 
 > [!CAUTION]
-> The clinician registration code is demo-only configuration. It must be replaced with secure, server-side role provisioning before any real deployment.
+> The clinician registration code is demo-only configuration. .
 
 ## Model training and evaluation
 
@@ -216,15 +214,6 @@ Evaluation artifacts are stored under `models/`. Notebook experiments are in `no
 └── requirements.txt           # Python dependencies
 ```
 
-## Current limitations
-
-- No calibrated physical reference means measurements remain pixel/frame-based.
-- The segmentation metric, tissue colors, and photo quality signals are not clinically validated.
-- Lighting, angle, distance, blur, and skin tone can affect results.
-- Longitudinal trends compare images but do not establish that healing improved or worsened.
-- The SQLite implementation and demo authentication are suitable for local prototyping only.
-- The pressure-injury classifier artifact is separate from the active wound segmentation workflow unless explicitly integrated.
-- Real deployment requires external clinical validation, secure authentication, access controls, data governance, backup, and appropriate privacy controls.
 
 ## Safety notice
 
