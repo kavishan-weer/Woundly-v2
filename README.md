@@ -1,115 +1,236 @@
-Project Report: Woundly Prototype
-Technical Architecture, Model Pipeline, and System Overview
+# Woundly
 
-Project: Wound Progress Tracking Companion
+Woundly is a browser-based wound progress tracking prototype. It lets a patient create photo check-ins, sends each image to a local Python server for wound analysis, saves the results in SQLite, and visualizes changes across check-ins. It also includes a clinician portal for reviewing entries.
 
+> [!IMPORTANT]
+> Woundly is an academic proof of concept, not a diagnostic or medical device. It does not validate tissue types, diagnose complications, recommend treatment, or replace assessment by a qualified healthcare professional.
 
-1. Executive Summary
-Woundly is a wound progress tracking prototype. It is designed as a Clinical Support System to empower patients to track their wound healing journey over time through photo-based check-ins, while providing clinicians with a remote monitoring review queue.
+## What happens in the project
 
-The system implements a Two-Stage Hybrid Pipeline: a U-Net deep learning model performs precise wound boundary segmentation, followed by deterministic OpenCV contour analysis to extract measurable wound metrics (total pixel area and maximum diameter). By combining neural network segmentation with rule-based geometric measurement and HSV tissue color analysis, Woundly delivers explainable, reproducible wound tracking without relying on opaque end-to-end classifiers. All patient photographs and journal logs are processed securely, demonstrating a privacy-focused approach to digital wound care.
+1. A user registers or signs in through the web interface.
+2. The patient uploads a wound photo and confirms the prototype consent notice.
+3. The frontend sends the image as a Base64 data URL to `POST /api/analyze`.
+4. A TensorFlow/Keras U-Net predicts a wound segmentation mask.
+5. OpenCV cleans the mask, removes small noise regions, and keeps the meaningful contours.
+6. The server calculates frame coverage, perimeter, shape features, mean wound color, and photo brightness/sharpness.
+7. Pixels inside the predicted wound mask are grouped into visual HSV color categories.
+8. The browser saves the photo and analysis as a check-in associated with the signed-in user.
+9. Later entries can be compared in the dashboard and timeline to show relative changes over time.
+10. Clinicians can open the separate portal, review patient entries, and add a status or note.
 
-2. Architecture & Data Flow
-Woundly is built with a decoupled architecture featuring a secure web frontend and a lightweight Python backend running machine learning inference.
+## Features
 
+- Patient registration and login
+- Browser photo upload and preview
+- U-Net wound-boundary segmentation
+- Wound mask visualization
+- Pixel-area and contour-perimeter estimates
+- Frame coverage and shape measurements
+- Brightness and sharpness/photo-quality checks
+- Segmented HSV visual color-group percentages
+- SQLite-backed photo check-in history
+- Patient dashboard, timeline, and progress views
+- Clinician queue and entry review workflow
+- Role-based API access and bearer-token authentication
 
-+---------------------------------------------------------+
-|                       WEB FRONTEND                      |
-|                                                         |
-|  - HTML5 & CSS3 Glassmorphism Dashboard                 |
-|  - Secure Client-Side State Management                  |
-|  - Privacy-focused Patient Photo Journal                |
-+------------------------------------+--------------------+
-                                     |
-                         HTTP POST   |   JSON Response
-                       /api/analyze  |  (Metrics & Base64)
-                                     v
-+---------------------------------------------------------+
-|                 LIGHTWEIGHT PYTHON SERVER               |
-|  - SimpleHTTPRequestHandler (Threaded)                  |
-|  - Preprocessing (Resize, Normalize)                    |
-|  - Stage 1: TensorFlow/Keras U-Net Segmentation         |
-|  - Stage 2: OpenCV Contour Analysis & Measurement       |
-|  - HSV Tissue Color Segmentation Engine                 |
-+---------------------------------------------------------+
+## Analysis pipeline
 
-        Detailed Pipeline Flow:
-        Upload & Preprocessing: The user captures or drops a photo. The image is resized to 224 x 224 pixels and normalized to a [0, 1] range before being fed into the neural network.
+```text
+Photo upload
+  -> browser preview and Base64 encoding
+  -> /api/analyze
+  -> resize image to 128 x 128 RGB
+  -> Gaussian-blur preprocessing
+  -> TensorFlow/Keras U-Net prediction
+  -> threshold and morphological cleanup
+  -> contour extraction and OpenCV measurements
+  -> HSV color grouping inside the mask
+  -> brightness/sharpness quality checks
+  -> JSON response stored in SQLite
+```
 
-        Stage 1 — U-Net Segmentation: The U-Net model predicts pixel-level probability masks identifying the wound area.
+### Segmentation
 
-        Morphological Post-Processing: OpenCV performs morphological opening/closing to eliminate small, disconnected noise pixels. A contour filter keeps only the largest, contiguous wound regions.
+The runtime prefers `my model/unet_wound_segmentation.h5`. If that supplied artifact is unavailable, it falls back to `models/wound_segmentation_unet.keras`. The selected model returns a pixel probability map, which is converted to a binary mask at a configured threshold. Opening and closing operations remove noise, and the largest meaningful regions are retained.
 
-        Stage 2 — Contour Measurement: cv2.findContours identifies the largest wound contour. cv2.contourArea computes the total pixel area, and cv2.boundingRect extracts the bounding box from which the maximum diameter (max of width, height) is derived.
+The active segmentation model and threshold metadata are recorded in `models/segmentation_meta.json`. Training and evaluation utilities are also included in `train_models.py`, `evaluate_models.py`, `calibrate_segmentation.py`, and `diagnose_segmentation.py`.
 
-        HSV Tissue Color Segmentation: Visual pixels inside the wound boundary are grouped using custom Hue-Saturation-Value (HSV) rules to estimate tissue composition — the primary indicator of wound healing progress.
+### Measurements
 
-        Photo-Quality Check: Sharpness is measured via the variance of the Laplacian, and brightness is checked using average pixel intensity.
+The server currently calculates:
 
-        Longitudinal Analysis: The frontend compares consecutive check-ins to track changes in wound area, diameter, and tissue color composition.
+- Segmented pixel area
+- Contour perimeter
+- Percentage of the 128 × 128 analysis frame covered by the mask
+- Mean model probability
+- Circularity
+- Bounding-box aspect ratio
+- Mean RGB value inside the mask
+- HSV visual color groups
+- Image brightness and Laplacian variance as a blur indicator
 
-3. Core AI & Computer Vision Models
-The backend runs a Two-Stage Hybrid Pipeline managed through custom model libraries:
+These are image-based measurements. Because no calibrated reference marker is present in the photo, Woundly cannot report a physically accurate area in square centimetres or a real-world wound diameter.
 
-A. Stage 1 — Wound boundary segmentation (U-Net)
-Architecture: A custom-designed, U-Net convolutional network. It utilizes contracting encoding blocks (Conv2D -> BatchNormalization -> MaxPooling2D) up to 192 filters, a bottleneck dropout layer, and expanding decoding blocks (UpSampling2D -> Concatenate -> Conv2D) to restore the target 224 x 224 mask output.
+### Tissue color display
 
-Loss Function: Optimized using a hybrid loss consisting of 75% Tversky loss (to address severe class imbalance between wound pixels and background skin) and 25% Binary Focal Cross-Entropy.
+The tissue view uses fixed HSV rules on pixels inside the predicted mask. It reports mutually exclusive percentages for visual groups such as red/pink-like, yellow/tan-like, dark-like, and pale-like pixels.
 
-Threshold Calibration: Managed dynamically by a calibration module, which runs grid search across thresholds (0.05 to 0.80) on held-out test data to maximize the Dice coefficient.
+These names describe image colors only. They are not medically validated tissue classifications, and lighting or camera settings can change the result.
 
-Current Calibration: Active threshold is calibrated at 0.20, yielding a strong held-out validation macro Dice coefficient (F1-score) of 0.72, demonstrating reliable extraction of wound boundaries across diverse skin tones and backgrounds.
+## Web interfaces
 
-B. Stage 2 — Deterministic contour measurement (OpenCV)
-After the U-Net produces a binary segmentation mask, OpenCV's cv2.findContours identifies all external contours. The largest contour (by cv2.contourArea) is selected as the primary wound region, and the following metrics are extracted:
+- `index.html` — patient dashboard, photo check-in workflow, timeline, and guidance
+- `clinician.html` — clinician login and review queue
+- `app.js` — patient application entry point
+- `js/clinician_app.js` — clinician portal logic
+- `server.py` — static file server and JSON API
+- `model_lib.py` — preprocessing, segmentation, measurements, and photo quality logic
+- `tissue_analysis.py` — HSV color-group analysis
 
-Total Pixel Area: Computed via cv2.contourArea(largest_contour) — the number of pixels enclosed by the wound boundary.
+## Storage and accounts
 
-Maximum Bounding Box Diameter: Derived from cv2.boundingRect(largest_contour) as max(width, height) — the longest side of the tightest axis-aligned rectangle enclosing the wound.
+Woundly uses a local SQLite database, `woundly.db`, for:
 
-Contour Perimeter: The arc length of the wound boundary, computed via cv2.arcLength.
+- Users and password hashes
+- Bearer authentication tokens
+- Roles (`patient` or `clinician`)
+- Photos and analysis results
+- Clinician review statuses and notes
 
-Bounding Box Coordinates: The (x, y, width, height) rectangle for overlay rendering.
+The application is intended for local demonstration. It is not a production security or clinical-record system. Passwords are currently hashed with SHA-256, bearer tokens are stored in the database, and the HTTP server is bound to `127.0.0.1`.
 
- The contour-based measurement pipeline provides reproducible, explainable geometric metrics that are more actionable for longitudinal wound tracking than a low-confidence categorical label.
+## API
 
-4. Rules-Based Analytical Engines
-Beyond the two-stage hybrid pipeline, Woundly integrates additional computer vision engines:
+| Method | Route | Purpose |
+|---|---|---|
+| `GET` | `/api/health` | Check whether the server is running |
+| `POST` | `/api/register` | Register a patient or clinician |
+| `POST` | `/api/login` | Log in and receive a bearer token |
+| `GET` | `/api/me` | Get the current authenticated user |
+| `POST` | `/api/analyze` | Analyze an uploaded image |
+| `GET` | `/api/entries` | Get the patient's check-ins |
+| `POST` | `/api/entries` | Save a photo and analysis entry |
+| `DELETE` | `/api/entries/{id}` | Delete a patient's entry |
+| `GET` | `/api/clinician/queue` | Get entries for clinician review |
+| `POST` | `/api/clinician/review` | Update an entry's clinician review |
 
-A. Explainable Tissue Color Analysis
-To offer visual descriptors of the wound bed, pixels inside the predicted U-Net mask are mapped to five distinct visual groups using HSV space thresholding:
+Most account, entry, and clinician routes require:
 
-Dark (Eschar-like): Value ≤ 65
+```http
+Authorization: Bearer <token>
+```
 
-Yellow/Tan (Slough-like): Hue ∈ [15, 42], Saturation ≥ 35, Value ≥ 80
+The analysis route accepts:
 
-Red/Pink (Granulation-like): Hue ≤ 14 or Hue ≥ 165, Saturation ≥ 40, Value ≥ 65
+```json
+{
+  "image": "data:image/jpeg;base64,<Base64 image>"
+}
+```
 
-Pale (Epithelial-like): Saturation ≤ 45, Value ≥ 150
+## Run locally
 
-Unclassified: Remaining pixels.
+### Requirements
 
-These color ratios are presented as longitudinal indicators of wound bed progression (e.g., tracking the decrease of slough/eschar and the increase of granulation tissue).
+- Python 3.9 or newer
+- TensorFlow
+- OpenCV
+- NumPy
+- Pillow
+- A modern browser
 
-B. Image Quality Control Engine
-To prevent inaccurate model outputs due to poor photography, the pipeline checks:
+### Setup
 
-Brightness: Evaluates the mean of the grayscale image. Flags warnings for dark (mean < 55) or overexposed (mean > 215) images.
+```bash
+python -m venv .venv
 
-Sharpness (Blur Detection): Computes the variance of the Laplacian operator on the grayscale image. Flags warnings if the variance is < 45, suggesting the camera is out of focus.
+# Windows
+.venv\Scripts\activate
 
-5. Current Prototype Limitations & Staging Data Boundaries
-Clinical Boundary: This prototype is an academic proof-of-concept. The models are not clinically validated and should not replace qualified clinical assessments.
+# macOS/Linux
+source .venv/bin/activate
 
-Pixel-Only Measurements: All wound area and diameter values are reported in pixels, not physical units. Without a known reference object in frame, absolute wound size in real-world units (cm²) cannot be determined. Variations in camera distance and angle between photo sessions directly affect pixel measurements, potentially producing misleading area/diameter trends.
+pip install -r requirements.txt
+python server.py
+```
 
-Physical Reference Marker (Planned): To resolve distance and perspective variations, a future iteration will require a physical reference marker (e.g., a standard coin of known diameter or a calibration sticker) to be placed adjacent to the wound in every photo. The system will detect the marker, compute a pixels-per-centimeter ratio, and convert all measurements into calibrated real-world units (cm² for area, cm for diameter).
+Open <http://localhost:4173>.
 
-Longitudinal Comparison Caveat: Progress is inferred by comparing consecutive wound area and tissue color composition. Without the physical reference marker, trends are relative and should be interpreted with caution.
+The server creates or updates `woundly.db` automatically.
 
-6. Development Roadmap & Suggested Next Steps
-Physical Reference Marker Integration (Priority): Implement an image-processing module to detect a known reference standard (e.g., a circular adhesive calibration dot of 25mm diameter or a standard coin) placed beside the wound in each photo. Using cv2.HoughCircles or contour matching, the system will calculate a pixels-per-centimeter scale factor and convert all measurements into calibrated real-world units — wound area in cm² and diameter in cm. This resolves the current limitation of pixel-only measurements and makes longitudinal comparisons robust against camera distance variations. - WE CAN IMPLEMENT THIS TOO, BUT IT TAKES SOME TIME
+### Clinician account
 
-Progress Label Dataset: Collect a clinician-labeled dataset of sequential wound photos classified by actual progress (improved, deteriorated, stable) to train a dedicated longitudinal progress model.
+The registration API supports a clinician role with registration code `CLINIC2026`. Open `http://localhost:4173/clinician.html` for the clinician interface.
 
-Clinical Evaluation: Partner with healthcare providers to run external clinical validation.
+> [!CAUTION]
+> The clinician registration code is demo-only configuration. It must be replaced with secure, server-side role provisioning before any real deployment.
+
+## Model training and evaluation
+
+Rebuild or replace the segmentation model locally with:
+
+```bash
+python train_models.py
+python evaluate_models.py
+```
+
+Additional commands inspect and calibrate the segmentation pipeline:
+
+```bash
+python calibrate_segmentation.py
+python diagnose_segmentation.py
+```
+
+Evaluation artifacts are stored under `models/`. Notebook experiments are in `notebooks/`, and additional reports and diagnostics are in `segmentation_diagnostics/` and `my model/`.
+
+## Technology stack
+
+- **Frontend:** HTML, CSS, JavaScript ES modules
+- **Server:** Python standard-library HTTP server
+- **Database:** SQLite
+- **Segmentation:** TensorFlow/Keras U-Net
+- **Image analysis:** OpenCV and NumPy
+- **Image handling:** Pillow
+
+## Project structure
+
+```text
+.
+├── index.html                 # Patient web interface
+├── clinician.html             # Clinician review interface
+├── app.js                     # Patient application entry point
+├── server.py                  # HTTP server, API, authentication, SQLite
+├── model_lib.py               # Segmentation and image measurements
+├── tissue_analysis.py         # HSV color-group analysis
+├── train_models.py            # Segmentation model training
+├── evaluate_models.py         # Model evaluation utilities
+├── calibrate_segmentation.py  # Threshold calibration
+├── diagnose_segmentation.py   # Segmentation diagnostics
+├── js/                        # Frontend modules
+├── css/                       # Frontend styles
+├── models/                    # Segmentation/classification artifacts and metadata
+├── my model/                  # Supplied model artifacts
+├── notebooks/                 # Experiments and analysis notebooks
+├── segmentation_diagnostics/  # Generated diagnostic outputs
+├── ARCHITECTURE.md            # Architecture detail
+└── requirements.txt           # Python dependencies
+```
+
+## Current limitations
+
+- No calibrated physical reference means measurements remain pixel/frame-based.
+- The segmentation metric, tissue colors, and photo quality signals are not clinically validated.
+- Lighting, angle, distance, blur, and skin tone can affect results.
+- Longitudinal trends compare images but do not establish that healing improved or worsened.
+- The SQLite implementation and demo authentication are suitable for local prototyping only.
+- The pressure-injury classifier artifact is separate from the active wound segmentation workflow unless explicitly integrated.
+- Real deployment requires external clinical validation, secure authentication, access controls, data governance, backup, and appropriate privacy controls.
+
+## Safety notice
+
+Do not use Woundly to diagnose a wound, decide on treatment, rule out infection or other complications, or delay professional care. Consult a qualified healthcare professional about concerning or worsening wounds.
+
+## Documentation
+
+- [Architecture](ARCHITECTURE.md)
+- [Project report](woundly_project_report.md)
